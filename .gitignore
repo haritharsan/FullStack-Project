@@ -1,0 +1,23 @@
+# Eclipse / STS
+.metadata/
+.classpath
+.project
+.settings/
+
+# Java build folders
+target/
+
+# Node / React
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# Uploads
+uploads/
+
+# OS system files
+.DS_Store
+Thumbs.db
