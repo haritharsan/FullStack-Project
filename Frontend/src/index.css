@@ -1,0 +1,14 @@
+
+.swiper-button-prev, .swiper-button-next {
+  color: white;
+  font-weight: bold;
+  scale: 0.5;
+}
+
+.swiper-pagination-bullet-active {
+  background: #00bcd4;
+}
+@keyframes fadeInScale {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

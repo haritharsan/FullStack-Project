@@ -1,0 +1,43 @@
+package com.example.demo.controller;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.model.SchemeModel;
+import com.example.demo.service.SchemeService;
+
+@CrossOrigin("*")
+@RestController
+@RequestMapping("/api/schemes")
+public class SchemeController {
+
+    @Autowired
+    private SchemeService service;
+
+    @PostMapping("/add")
+    public SchemeModel add(@RequestBody SchemeModel model) {
+        return service.addScheme(model);
+    }
+
+    @GetMapping
+    public List<SchemeModel> getAll() {
+        return service.getAllSchemes();
+    }
+
+    @GetMapping("/search")
+    public List<SchemeModel> search(@RequestParam String keyword) {
+        return service.searchSchemes(keyword);
+    }
+
+    @DeleteMapping("/{id}")
+    public String delete(@PathVariable Long id) {
+        return service.deleteScheme(id);
+    }
+
+    // ---------------------- UPDATE ENDPOINT ----------------------
+    @PutMapping("/update/{id}")
+    public SchemeModel update(@PathVariable Long id, @RequestBody SchemeModel updatedModel) {
+        return service.updateScheme(id, updatedModel);
+    }
+}

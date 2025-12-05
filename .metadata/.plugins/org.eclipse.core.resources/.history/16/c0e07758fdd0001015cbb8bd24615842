@@ -1,0 +1,129 @@
+package com.example.demo.service;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.springframework.core.io.FileSystemResource;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+
+import jakarta.mail.internet.MimeMessage;
+
+@Service
+public class EmailService {
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    private Map<String, Integer> otpStore = new HashMap<>();
+
+    // ---------------------------------------
+    // 🔹 1. SEND OTP
+    // ---------------------------------------
+    public int sendOtp(String email) {
+        Random random = new Random();
+        int otp = random.nextInt(900000) + 100000;
+
+        otpStore.put(email, otp);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Your e-Sevai OTP Verification");
+        message.setText("Your OTP for registration is: " + otp + "\n\nDo NOT share with anyone.");
+
+        mailSender.send(message);
+
+        return otp;
+    }
+
+    public boolean verifyOtp(String email, int otp) {
+        if (otpStore.containsKey(email) && otpStore.get(email) == otp) {
+            otpStore.remove(email);
+            return true;
+        }
+        return false;
+    }
+
+    // ---------------------------------------
+    // 🔥 2. SEND APPLICATION SUBMISSION MAIL
+    // ---------------------------------------
+    public void sendApplicationMail(String toEmail, String fullName, String certificateType,
+                                    Long appId, String date) {
+
+        String subject = "Application Submitted Successfully";
+
+        String body =
+                "Dear " + fullName + ",\n\n" +
+                "Thank you for submitting your application through the Tamil Nadu e-Sevai Portal.\n\n" +
+
+                "Your application details are as follows:\n" +
+                "---------------------------------------------\n" +
+                "📌 Applicant Name      : " + fullName + "\n" +
+                "📌 Certificate/Scheme  : " + certificateType + "\n" +
+                "📌 Application ID      : " + appId + "\n" +
+                "📌 Submission Date     : " + date + "\n" +
+                "📌 Application Status  : Pending Verification\n" +
+                "---------------------------------------------\n\n" +
+
+                "📝 What happens next?\n" +
+                "- Your application will be reviewed by the respective department.\n" +
+                "- You will receive email updates regarding approval or additional document requirements.\n" +
+                "- Once approved, you can download the certificate from your dashboard.\n\n" +
+
+                "📂 Note:\n" +
+                "Please keep your Application ID for future reference.\n\n" +
+
+                "Warm Regards,\n" +
+                "Tamil Nadu e-Sevai\n" +
+                "Tamil Nadu e-Governance Agency (TNeGA)\n" +
+                "Government of Tamil Nadu\n";
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(toEmail);
+        mail.setSubject(subject);
+        mail.setText(body);
+
+        mailSender.send(mail);
+    }
+
+
+    // ---------------------------------------
+    // 🔥 3. SEND APPROVED MAIL WITH PDF ATTACHMENT
+    // ---------------------------------------
+    public void sendApprovedMailWithPdf(String toEmail, String fullName, String certificateType, File pdfFile) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(toEmail);
+            helper.setSubject("Your Certificate for " + certificateType + " is Approved");
+
+            String body =
+                    "Dear " + fullName + ",\n\n" +
+                    "Congratulations! Your application has been APPROVED.\n\n" +
+                    "Your certificate is attached with this email as a PDF file.\n\n" +
+                    "Thank you for using Tamil Nadu e-Sevai.\n\n" +
+                    "Warm Regards,\n" +
+                    "Tamil Nadu e-Sevai\n";
+
+            helper.setText(body);
+
+            FileSystemResource file = new FileSystemResource(pdfFile);
+            helper.addAttachment(pdfFile.getName(), file);
+
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}

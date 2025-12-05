@@ -1,0 +1,116 @@
+package com.example.demo.service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmailService {
+
+	@Autowired
+	private JavaMailSender mailSender;
+
+	private Map<String, Integer> otpStore = new HashMap<>();
+
+	// 1. OTP
+	public int sendOtp(String email) {
+		Random random = new Random();
+		int otp = random.nextInt(900000) + 100000;
+
+		otpStore.put(email, otp);
+
+		SimpleMailMessage m = new SimpleMailMessage();
+		m.setTo(email);
+		m.setSubject("Your e-Sevai OTP Verification");
+		m.setText("Your OTP: " + otp);
+		mailSender.send(m);
+
+		return otp;
+	}
+
+	public boolean verifyOtp(String email, int otp) {
+		if (otpStore.containsKey(email) && otpStore.get(email) == otp) {
+			otpStore.remove(email);
+			return true;
+		}
+		return false;
+	}
+
+	// 2. Application Submitted Mail
+	public void sendApplicationMail(String toEmail, String fullName, String certificateType, Long appId, String date) {
+
+		String subject = "Your Application Has Been Submitted Successfully - Tamil Nadu e-Sevai";
+
+		String body = "Dear " + fullName + ",\n\n"
+				+ "Thank you for applying through the Tamil Nadu e-Sevai online portal.\n"
+				+ "Your application has been submitted successfully and is currently under review.\n\n" +
+
+				"Your application details are provided below:\n"
+				+ "------------------------------------------------------------\n" + "📌 Applicant Name          : "
+				+ fullName + "\n" + "📌 Certificate / Scheme    : " + certificateType + "\n"
+				+ "📌 Application ID          : " + appId + "\n" + "📌 Submission Date         : " + date + "\n"
+				+ "📌 Current Status          : Pending Verification\n"
+				+ "------------------------------------------------------------\n\n" +
+
+				"📝 What Happens Next?\n" + "- Your application will be verified by the concerned department.\n"
+				+ "- If additional information or documents are required, you will be notified through email.\n"
+				+ "- Once approved, you will be able to download your certificate from the e-Sevai user dashboard.\n\n"
+				+
+
+				"📂 Important Notes:\n" + "- Please keep your Application ID safe for future reference.\n"
+				+ "- Ensure your registered mobile number and email remain active.\n"
+				+ "- Do not share your personal details or documents with unknown persons.\n\n" +
+
+				"📢 Need Assistance?\n"
+				+ "For help regarding your application, please visit your nearest e-Sevai centre\n"
+				+ "or contact the District e-Sevai Support Team.\n\n" +
+
+				"Thank you for using Tamil Nadu e-Sevai digital services.\n"
+				+ "We remain committed to providing fast, transparent, and citizen-friendly services.\n\n" +
+
+				"Warm Regards,\n" + "Tamil Nadu e-Sevai Team\n" + "Tamil Nadu e-Governance Agency (TNeGA)\n"
+				+ "Government of Tamil Nadu\n";
+
+		SimpleMailMessage mail = new SimpleMailMessage();
+		mail.setTo(toEmail);
+		mail.setSubject(subject);
+		mail.setText(body);
+
+		mailSender.send(mail);
+	}
+
+	// 3. Approved Mail
+	public void sendApprovedMail(String toEmail, String fullName, String certificateType) {
+
+		String body = "Dear " + fullName + ",\n\n" + "Your application for '" + certificateType
+				+ "' has been APPROVED.\n\n" + "You can now download your certificate from the e-Sevai portal.\n\n"
+				+ "Regards,\nTamil Nadu e-Sevai";
+
+		SimpleMailMessage mail = new SimpleMailMessage();
+		mail.setTo(toEmail);
+		mail.setSubject("Your Application Has Been Approved");
+		mail.setText(body);
+
+		mailSender.send(mail);
+	}
+
+	// 4. Rejected Mail
+	public void sendRejectedMail(String toEmail, String fullName, String certificateType, String reason) {
+
+		String body = "Dear " + fullName + ",\n\n" + "Your application for '" + certificateType
+				+ "' has been REJECTED.\n\n" + "Reason: " + (reason != null ? reason : "Not specified") + "\n\n"
+				+ "You may reapply after correcting the issue.\n\n" + "Regards,\nTamil Nadu e-Sevai";
+
+		SimpleMailMessage mail = new SimpleMailMessage();
+		mail.setTo(toEmail);
+		mail.setSubject("Your Application Has Been Rejected");
+		mail.setText(body);
+
+		mailSender.send(mail);
+	}
+}

@@ -1,0 +1,42 @@
+package com.example.demo.service;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.SchemeModel;
+import com.example.demo.repositoryint.SchemeRepository;
+
+@Service
+public class SchemeService {
+
+    @Autowired
+    private SchemeRepository repo;
+
+    public SchemeModel saveScheme(SchemeModel model) {
+        return repo.save(model);
+    }
+
+    public List<SchemeModel> getAllSchemes() {
+        return repo.findAll();
+    }
+
+    public List<SchemeModel> searchSchemes(String keyword) {
+        return repo.findByTitleContainingIgnoreCase(keyword);
+    }
+
+    public SchemeModel updateScheme(Long id, SchemeModel newScheme) {
+        return repo.findById(id).map(scheme -> {
+            scheme.setTitle(newScheme.getTitle());
+            scheme.setDescription(newScheme.getDescription());
+            scheme.setEligibility(newScheme.getEligibility());
+            scheme.setBenefit(newScheme.getBenefit());
+            return repo.save(scheme);
+        }).orElse(null);
+    }
+
+    public String deleteScheme(Long id) {
+        repo.deleteById(id);
+        return "Scheme deleted successfully";
+    }
+}

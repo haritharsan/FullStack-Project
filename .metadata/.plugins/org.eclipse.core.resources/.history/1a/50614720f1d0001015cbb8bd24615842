@@ -1,0 +1,14 @@
+package com.example.demo.repositoryint;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.demo.model.ApplicationModel;
+
+public interface ApplicationRepository extends JpaRepository<ApplicationModel, Long> {
+
+    // ✔ Track user applications by Email
+    List<ApplicationModel> findByEmail(String email);
+
+    // ✔ Check if Aadhaar already exists (prevent duplicate applications)
+    List<ApplicationModel> findByAadhaarNumber(String aadhaarNumber);
+}

@@ -1,0 +1,64 @@
+package com.example.demo.service;
+
+import com.example.demo.model.Gallery;
+import com.example.demo.repositoryint.GalleryRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class GalleryService {
+
+    @Autowired
+    private GalleryRepository repo;
+
+    public Gallery save(Gallery gallery) {
+        return repo.save(gallery);
+    }
+
+    public List<Gallery> getAll() {
+        return repo.findAll();
+    }
+
+    // -------------------------
+    // ⭐ UPDATE IMAGE DETAILS
+    // -------------------------
+    public Gallery update(Long id, Gallery newData) {
+
+        Optional<Gallery> existing = repo.findById(id);
+
+        if (existing.isPresent()) {
+            Gallery g = existing.get();
+
+            g.setTitle(newData.getTitle());
+            g.setCategory(newData.getCategory());
+
+            // If new image URL passed → update it
+            if (newData.getImageUrl() != null) {
+                g.setImageUrl(newData.getImageUrl());
+            }
+
+            return repo.save(g);
+        }
+
+        return null; // or throw exception
+    }
+
+    // -------------------------
+    // ⭐ DELETE BY ID
+    // -------------------------
+    public boolean delete(Long id) {
+
+        Optional<Gallery> existing = repo.findById(id);
+
+        if (existing.isPresent()) {
+            repo.deleteById(id);
+            return true;
+        }
+
+        return false;
+    }
+}

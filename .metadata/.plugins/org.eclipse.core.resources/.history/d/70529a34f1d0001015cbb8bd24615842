@@ -1,0 +1,145 @@
+package com.example.demo.dto;
+
+public class ApplicationDto {
+
+    private Long id;
+
+    private String loginId;
+    private String certificateType;
+    private String fullName;
+    private String fatherName;
+    private String motherName;
+    private String dob;
+    private String gender;
+    private String address;
+    private String mobile;
+    private String email;
+    private String status;
+    private String appliedDate;
+    private String certificateUrl;
+
+    // ⭐ NEW Aadhaar fields
+    private String aadhaarNumber;
+    private String aadhaarFile;
+    private boolean aadhaarVerified;
+
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getLoginId() {
+        return loginId;
+    }
+    public void setLoginId(String loginId) {
+        this.loginId = loginId;
+    }
+
+    public String getCertificateType() {
+        return certificateType;
+    }
+    public void setCertificateType(String certificateType) {
+        this.certificateType = certificateType;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getFatherName() {
+        return fatherName;
+    }
+    public void setFatherName(String fatherName) {
+        this.fatherName = fatherName;
+    }
+
+    public String getMotherName() {
+        return motherName;
+    }
+    public void setMotherName(String motherName) {
+        this.motherName = motherName;
+    }
+
+    public String getDob() {
+        return dob;
+    }
+    public void setDob(String dob) {
+        this.dob = dob;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAppliedDate() {
+        return appliedDate;
+    }
+    public void setAppliedDate(String appliedDate) {
+        this.appliedDate = appliedDate;
+    }
+
+    public String getCertificateUrl() {
+        return certificateUrl;
+    }
+    public void setCertificateUrl(String certificateUrl) {
+        this.certificateUrl = certificateUrl;
+    }
+
+    // ⭐ Aadhaar fields
+    public String getAadhaarNumber() {
+        return aadhaarNumber;
+    }
+    public void setAadhaarNumber(String aadhaarNumber) {
+        this.aadhaarNumber = aadhaarNumber;
+    }
+
+    public String getAadhaarFile() {
+        return aadhaarFile;
+    }
+    public void setAadhaarFile(String aadhaarFile) {
+        this.aadhaarFile = aadhaarFile;
+    }
+
+    public boolean isAadhaarVerified() {
+        return aadhaarVerified;
+    }
+    public void setAadhaarVerified(boolean aadhaarVerified) {
+        this.aadhaarVerified = aadhaarVerified;
+    }
+}

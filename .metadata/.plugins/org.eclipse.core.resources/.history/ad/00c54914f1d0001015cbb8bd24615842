@@ -1,0 +1,82 @@
+package com.example.demo.controller;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.model.ApplicationModel;
+import com.example.demo.service.ApplicationService;
+
+@CrossOrigin("http://localhost:5173")
+@RestController
+@RequestMapping("/applications")
+public class ApplicationController {
+
+    @Autowired
+    private ApplicationService service;
+
+    // ⭐ APPLY (Certificate / Scheme)
+    @PostMapping("/apply")
+    public ApplicationModel apply(@RequestBody ApplicationModel app) {
+
+        // 1. Aadhaar must be verified from frontend OCR
+        if (!app.isAadhaarVerified()) {
+            throw new RuntimeException("Aadhaar not verified!");
+        }
+
+        // 2. Backend verifies Aadhaar ↔ Name match
+        boolean aadhaarOk = service.verifyAadhaarMatch(app.getAadhaarNumber(), app.getFullName());
+
+        if (!aadhaarOk) {
+            throw new RuntimeException("Aadhaar does not match with name. Fraud suspected!");
+        }
+
+        // 3. Save application
+        return service.apply(app);
+    }
+
+
+    // ⭐ FRONTEND CALLS THIS WHEN UPLOADING AADHAAR (OPTIONAL)
+    @GetMapping("/aadhaar/check")
+    public boolean checkAadhaar(
+            @RequestParam String aadhaarNumber,
+            @RequestParam String fullName) {
+
+        return service.verifyAadhaarMatch(aadhaarNumber, fullName);
+    }
+
+
+    // ⭐ TRACK BY EMAIL
+    @GetMapping("/track/email/{email}")
+    public List<ApplicationModel> getByEmail(@PathVariable String email) {
+        return service.getByEmail(email);
+    }
+
+    // ⭐ ADMIN — Get all
+    @GetMapping("/admin")
+    public List<ApplicationModel> getAll() {
+        return service.getAllApplications();
+    }
+
+    // ⭐ ADMIN — Update status
+    @PutMapping("/status/{id}")
+    public ApplicationModel updateStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        return service.updateStatus(id, status);
+    }
+
+    // ⭐ Get one
+    @GetMapping("/{id}")
+    public ApplicationModel getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    // ⭐ Delete
+    @DeleteMapping("/delete/{id}")
+    public String deleteApplication(@PathVariable Long id) {
+        boolean deleted = service.delete(id);
+        return deleted ? "Application Deleted Successfully"
+                       : "Application Not Found";
+    }
+}

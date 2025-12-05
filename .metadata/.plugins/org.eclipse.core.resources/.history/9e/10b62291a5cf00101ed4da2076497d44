@@ -1,0 +1,26 @@
+package com.example.demo.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.service.EmailService;
+
+@CrossOrigin(origins = "*")
+@RestController
+@RequestMapping("/api/otp")
+public class OtpController {
+
+    @Autowired
+    private EmailService emailService;
+
+    @GetMapping("/send")
+    public String sendOtp(@RequestParam String email) {
+        int otp = emailService.sendOtp(email);
+        return "OTP sent to " + email;
+    }
+
+    @PostMapping("/verify")
+    public boolean verifyOtp(@RequestParam String email, @RequestParam int otp) {
+        return emailService.verifyOtp(email, otp);
+    }
+}

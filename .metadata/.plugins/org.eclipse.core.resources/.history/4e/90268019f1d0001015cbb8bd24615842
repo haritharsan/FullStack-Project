@@ -1,0 +1,86 @@
+package com.example.demo.service;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.example.demo.model.ApplicationModel;
+import com.example.demo.repositoryint.ApplicationRepository;
+
+@Service
+public class ApplicationService {
+
+    @Autowired
+    private ApplicationRepository repo;
+
+    // ⭐ USER APPLIES (Certificate / Scheme)
+    public ApplicationModel apply(ApplicationModel app) {
+
+        // Always new application
+        app.setStatus("Pending");
+
+        // Aadhaar verification must be TRUE from frontend OCR
+        if (!app.isAadhaarVerified()) {
+            throw new RuntimeException("Aadhaar not verified!");
+        }
+
+        return repo.save(app);
+    }
+
+    // ⭐ ALL APPS OF USER
+    public List<ApplicationModel> getByEmail(String email) {
+        return repo.findByEmail(email);
+    }
+
+    // ⭐ Admin list
+    public List<ApplicationModel> getAllApplications() {
+        return repo.findAll();
+    }
+
+    // ⭐ Update status (Admin)
+    public ApplicationModel updateStatus(Long id, String status) {
+
+        ApplicationModel app = repo.findById(id).orElse(null);
+        if (app == null) return null;
+
+        app.setStatus(status);
+
+        if ("Approved".equals(status)) {
+            app.setCertificateUrl("CERT-" + app.getId() + ".pdf");
+        }
+
+        return repo.save(app);
+    }
+
+    // ⭐ View one application
+    public ApplicationModel getById(Long id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    // ⭐ Delete application
+    public boolean delete(Long id) {
+        if (!repo.existsById(id)) return false;
+
+        repo.deleteById(id);
+        return true;
+    }
+
+    // ⭐ (OPTIONAL) Check Aadhaar belongs to same person
+    public boolean verifyAadhaarMatch(String aadhaarNumber, String userName) {
+
+        // lookup all entries with same Aadhaar
+        List<ApplicationModel> previousApps = repo.findByAadhaarNumber(aadhaarNumber);
+
+        // if first time Aadhaar → always valid
+        if (previousApps.isEmpty()) return true;
+
+        // if Aadhaar exists but same name → valid
+        for (ApplicationModel a : previousApps) {
+            if (a.getFullName().equalsIgnoreCase(userName)) {
+                return true;
+            }
+        }
+
+        // different name but same Aadhaar → FRAUD
+        return false;
+    }
+}

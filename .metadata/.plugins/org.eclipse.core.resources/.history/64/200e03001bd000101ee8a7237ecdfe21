@@ -1,0 +1,24 @@
+package com.example.demo.service;
+
+import com.example.demo.model.Gallery;
+import com.example.demo.repositoryint.GalleryRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class GalleryService {
+
+    @Autowired
+    private GalleryRepository repo;
+
+    public Gallery save(Gallery gallery) {
+        return repo.save(gallery);
+    }
+
+    public List<Gallery> getAll() {
+        return repo.findAll();
+    }
+}

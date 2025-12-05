@@ -1,0 +1,9 @@
+# Frontend
+Frontend/node_modules/
+Frontend/build/
+
+# Backend
+GovernmentProject/target/
+
+# Logs
+*.log

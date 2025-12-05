@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: pgdb
+    restart: always
+    environment:
+      POSTGRES_USER: postgres         # <-- your username
+      POSTGRES_PASSWORD: admin        # <-- your password
+      POSTGRES_DB: governmentProject  # <-- your database name
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./GovernmentProject
+    container_name: java-backend
+    restart: always
+    volumes:
+    - ./uploads:/app/uploads
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/governmentProject
+      SPRING_DATASOURCE_USERNAME: postgres   # <-- must match DB
+      SPRING_DATASOURCE_PASSWORD: admin      # <-- must match DB
+    depends_on:
+      - postgres
+
+  frontend:
+    build: ./Frontend
+    container_name: react-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

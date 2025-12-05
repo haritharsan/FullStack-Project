@@ -1,0 +1,41 @@
+package com.example.demo.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.CertificateModel;
+import com.example.demo.repositoryint.CertificateRepository;
+
+@Service
+public class CertificateService {
+
+    @Autowired
+    private CertificateRepository repo;
+
+    public CertificateModel applyCertificate(CertificateModel model) {
+        return repo.save(model);
+    }
+
+    public List<CertificateModel> getCertificatesByUser(String loginId) {
+        return repo.findByLoginId(loginId);
+    }
+
+    public CertificateModel updateStatus(Long id, String status) {
+        CertificateModel cert = repo.findById(id).orElse(null);
+
+        if(cert == null) return null;
+
+        cert.setStatus(status);
+        return repo.save(cert);
+    }
+
+    public void deleteCertificate(Long id) {
+        repo.deleteById(id);
+    }
+
+    public List<CertificateModel> getAllCertificates() {
+        return repo.findAll();
+    }
+}

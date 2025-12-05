@@ -1,0 +1,42 @@
+package com.example.demo.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.UserDto;
+import com.example.demo.model.UserModel;
+import com.example.demo.repositoryint.UserRepository;
+
+@Service
+public class UserService {
+
+	@Autowired
+	public UserRepository userRepository;
+
+	
+	public UserModel createUser(UserDto userDto) {
+		UserModel user=new UserModel();
+		user.setName(userDto.getName());
+		user.setAadhaar(userDto.getAadhaar());
+		user.setDistrict(userDto.getDistrict());
+		user.setEmail(userDto.getEmail());
+		user.setLoginId(userDto.getLoginId());
+		user.setMobile(userDto.getMobile());
+		user.setPassword(userDto.getPassword());
+		user.setDob(userDto.getDob());
+		user.setTaluk(userDto.getTaluk());
+		
+		return userRepository.save(user);
+	}
+	
+	
+	public List<UserModel> findByLoginId(String loginId) {
+	    return userRepository.findByLoginId(loginId);
+	}
+
+	  public List<UserModel> getAllUser() {
+	        return userRepository.findAll();
+	    }
+}

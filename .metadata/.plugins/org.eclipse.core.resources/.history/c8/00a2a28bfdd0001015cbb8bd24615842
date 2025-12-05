@@ -1,0 +1,83 @@
+package com.example.demo.service;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.ApplicationModel;
+import com.example.demo.repositoryint.ApplicationRepository;
+
+@Service
+public class ApplicationService {
+
+    @Autowired
+    private ApplicationRepository repo;
+
+    @Autowired
+    private EmailService emailService;   // 🔹 Add this
+
+    public ApplicationModel apply(ApplicationModel app) {
+
+        app.setStatus("Pending");
+        ApplicationModel saved = repo.save(app);
+
+        // 🔥 Send Application Submitted Email
+        emailService.sendApplicationMail(
+                app.getEmail(),
+                app.getFullName(),
+                app.getCertificateType(),
+                saved.getId(),
+                saved.getAppliedDate()
+        );
+
+        return saved;
+    }
+
+    // TRACK BY EMAIL
+    public List<ApplicationModel> getByEmail(String email) {
+        return repo.findByEmail(email);
+    }
+
+    public List<ApplicationModel> getAllApplications() {
+        return repo.findAll();
+    }
+
+    public ApplicationModel updateStatus(Long id, String status) {
+
+        ApplicationModel app = repo.findById(id).orElse(null);
+        if (app == null) return null;
+
+        app.setStatus(status);
+
+        if(status.equals("Approved")) {
+            // Prevent regenerating PDF filename
+            if (app.getCertificateUrl() == null || app.getCertificateUrl().isEmpty()) {
+                app.setCertificateUrl("CERT-" + id + ".pdf");
+            }
+
+            // OPTIONAL 🔥 send approval email
+            /*
+            emailService.sendApprovalMail(
+                    app.getEmail(),
+                    app.getFullName(),
+                    app.getCertificateType(),
+                    id
+            );
+            */
+        }
+
+        return repo.save(app);
+    }
+
+    public ApplicationModel getById(Long id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    public boolean delete(Long id) {
+        if (!repo.existsById(id)) {
+            return false;
+        }
+        repo.deleteById(id);
+        return true;
+    }
+}

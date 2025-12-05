@@ -1,0 +1,31 @@
+package com.example.demo.service;
+
+import java.io.File;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import net.sourceforge.tess4j.Tesseract;
+
+@Service
+public class OcrService {
+
+    public String extractText(MultipartFile file) throws Exception {
+
+        // Save temp file for OCR
+        File convFile = File.createTempFile("aadhaar", ".png");
+        file.transferTo(convFile);
+
+        // Set Tesseract path
+        Tesseract tesseract = new Tesseract();
+        tesseract.setDatapath("C:/Program Files/Tesseract-OCR/tessdata"); 
+        tesseract.setLanguage("eng");
+
+        // Extract text
+        String text = tesseract.doOCR(convFile);
+
+        System.out.println("OCR Extracted: " + text);
+
+        return text;
+    }
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Tamil Nadu e-Governance Agency",
+  "subtitle": "Government of Tamil Nadu - Digital Services",
+
+  "menu": {
+    "home": "Home",
+    "about": "About Us",
+    "projects": "Projects",
+    "csc": "CSC",
+    "newsletter": "E-Newsletter",
+    "tngis": "TNGIS",
+    "downloads": "Downloads",
+    "tenders": "Tenders",
+    "awards": "Awards",
+    "gallery": "Gallery",
+    "rti": "RTI",
+    "contact": "Contact Us",
+    "careers": "Careers"
+  },
+
+  "services_title": "Citizen Services",
+  "important_links": "Important Links",
+  "location_map": "Location Map"
+}

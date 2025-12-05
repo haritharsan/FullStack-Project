@@ -1,0 +1,57 @@
+package com.example.demo.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.UserDto;
+import com.example.demo.model.UserModel;
+import com.example.demo.repositoryint.UserRepository;
+
+@Service
+public class UserService {
+
+	@Autowired
+	public UserRepository userRepository;
+	
+	public String viewing() {
+		return "Vanakkam da mapla Service layer la irunthu";
+	}
+	
+	public UserModel createUser(UserDto userDto) {
+		UserModel user=new UserModel();
+		user.setName(userDto.getName());
+		user.setAadhaar(userDto.getAadhaar());
+		user.setDistrict(userDto.getDistrict());
+		user.setEmail(userDto.getEmail());
+		user.setLoginId(userDto.getLoginId());
+		user.setMobile(userDto.getMobile());
+		user.setPassword(userDto.getPassword());
+		user.setDob(userDto.getDob());
+		user.setTaluk(userDto.getTaluk());
+		
+		return userRepository.save(user);
+	}
+	
+	public List<UserModel> findByEmail(String email) {
+	    return userRepository.findByEmail(email);
+	}
+
+
+	public List<UserModel> getAllUser() {
+	    return userRepository.findAll();
+	}
+
+	// ------------------ DELETE USER BY ID ------------------
+	public boolean deleteUser(Long id) {
+	    Optional<UserModel> user = userRepository.findById(id);
+	    
+	    if (user.isPresent()) {
+	        userRepository.deleteById(id);
+	        return true;
+	    }
+	    return false;
+	}
+}

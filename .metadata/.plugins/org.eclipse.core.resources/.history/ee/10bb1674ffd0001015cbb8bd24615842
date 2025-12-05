@@ -1,0 +1,172 @@
+package com.example.demo.service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmailService {
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    private Map<String, Integer> otpStore = new HashMap<>();
+
+    // ---------------------------------------
+    // 1. SEND OTP
+    // ---------------------------------------
+    public int sendOtp(String email) {
+        Random random = new Random();
+        int otp = random.nextInt(900000) + 100000;
+
+        otpStore.put(email, otp);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Your e-Sevai OTP Verification");
+        message.setText("Your OTP for registration is: " + otp + "\n\nDo NOT share with anyone.");
+
+        mailSender.send(message);
+
+        return otp;
+    }
+
+    public boolean verifyOtp(String email, int otp) {
+        if (otpStore.containsKey(email) && otpStore.get(email) == otp) {
+            otpStore.remove(email);
+            return true;
+        }
+        return false;
+    }
+
+    // ---------------------------------------
+    // 2. SEND APPLICATION SUBMISSION MAIL
+    // ---------------------------------------
+    public void sendApplicationMail(String toEmail, String fullName, String certificateType,
+                                    Long appId, String date) {
+
+        String subject = "Application Submitted Successfully";
+
+        String body =
+                "Dear " + fullName + ",\n\n" +
+                "Thank you for submitting your application through the Tamil Nadu e-Sevai Portal.\n\n" +
+
+                "Your application details are as follows:\n" +
+                "---------------------------------------------\n" +
+                "📌 Applicant Name      : " + fullName + "\n" +
+                "📌 Certificate/Scheme  : " + certificateType + "\n" +
+                "📌 Application ID      : " + appId + "\n" +
+                "📌 Submission Date     : " + date + "\n" +
+                "📌 Application Status  : Pending Verification\n" +
+                "---------------------------------------------\n\n" +
+
+                "📝 What happens next?\n" +
+                "- Your application will be reviewed soon.\n" +
+                "- You will receive email updates regarding approval.\n\n" +
+
+                "Warm Regards,\n" +
+                "Tamil Nadu e-Sevai\n";
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(toEmail);
+        mail.setSubject(subject);
+        mail.setText(body);
+
+        mailSender.send(mail);
+    }
+
+    // ---------------------------------------
+    // 3. SEND SIMPLE APPROVAL MAIL (NO PDF)
+    // ---------------------------------------
+    public void sendApprovedMail(String toEmail, String fullName, String certificateType) {
+
+        String subject = "Your Application Has Been Approved - Tamil Nadu e-Sevai";
+
+        String body =
+                "Dear " + fullName + ",\n\n" +
+                "We are pleased to inform you that your application submitted through the Tamil Nadu e-Sevai portal has been successfully APPROVED.\n\n" +
+
+                "Your application details are as follows:\n" +
+                "------------------------------------------------------------\n" +
+                "📌 Applicant Name      : " + fullName + "\n" +
+                "📌 Certificate / Scheme : " + certificateType + "\n" +
+                "📌 Approval Status      : Approved\n" +
+                "📌 Issued By            : Tamil Nadu e-Governance Agency (TNeGA)\n" +
+                "------------------------------------------------------------\n\n" +
+
+                "📄 Certificate Download:\n" +
+                "You can now download your approved certificate anytime from your e-Sevai user dashboard under the 'My Applications' or 'Downloads' section.\n\n" +
+
+                "📝 Important Notes:\n" +
+                "- Keep a digital and printed copy of your certificate for future use.\n" +
+                "- Do not share your certificate or personal details with unknown persons.\n" +
+                "- For any corrections, please visit your nearest e-Sevai center.\n\n" +
+
+                "📢 Need Help?\n" +
+                "If you face any issues downloading the certificate, please contact your District e-Sevai Support Team or raise a service request through the portal.\n\n" +
+
+                "Thank you for using Tamil Nadu e-Sevai services.\n" +
+                "We are committed to providing faster, transparent and citizen-friendly services.\n\n" +
+
+                "Warm Regards,\n" +
+                "Tamil Nadu e-Sevai Team\n" +
+                "Tamil Nadu e-Governance Agency (TNeGA)\n" +
+                "Government of Tamil Nadu\n";
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(toEmail);
+        mail.setSubject(subject);
+        mail.setText(body);
+
+        mailSender.send(mail);
+    }
+    public void sendRejectedMail(String toEmail, String fullName, String certificateType, String reason) {
+
+        String subject = "Your Application Has Been Rejected - Tamil Nadu e-Sevai";
+
+        String body =
+                "Dear " + fullName + ",\n\n" +
+                "We regret to inform you that your application submitted through the Tamil Nadu e-Sevai portal has been REJECTED.\n\n" +
+
+                "Your application details are as follows:\n" +
+                "------------------------------------------------------------\n" +
+                "📌 Applicant Name       : " + fullName + "\n" +
+                "📌 Certificate / Scheme : " + certificateType + "\n" +
+                "📌 Approval Status      : Rejected\n" +
+                "📌 Issued By            : Tamil Nadu e-Governance Agency (TNeGA)\n" +
+                "------------------------------------------------------------\n\n" +
+
+                "❗ Reason for Rejection:\n" +
+                (reason != null && !reason.isEmpty() ? reason : "The application did not meet the required criteria.") + "\n\n" +
+
+                "📝 What You Can Do:\n" +
+                "- Review the reason mentioned above.\n" +
+                "- Correct the required details or upload proper documents.\n" +
+                "- You may reapply through the e-Sevai portal anytime.\n\n" +
+
+                "📢 Need Help?\n" +
+                "If you need assistance, please contact your District e-Sevai Support Team or visit your nearest e-Sevai center.\n\n" +
+
+                "Thank you for using Tamil Nadu e-Sevai services.\n" +
+                "We are committed to providing better, transparent, and citizen-friendly services.\n\n" +
+
+                "Warm Regards,\n" +
+                "Tamil Nadu e-Sevai Team\n" +
+                "Tamil Nadu e-Governance Agency (TNeGA)\n" +
+                "Government of Tamil Nadu\n";
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(toEmail);
+        mail.setSubject(subject);
+        mail.setText(body);
+
+        mailSender.send(mail);
+    }
+
+
+}

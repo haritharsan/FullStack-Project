@@ -1,0 +1,62 @@
+package com.example.demo.controller;
+
+import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.example.demo.dto.UserDto;
+import com.example.demo.model.UserModel;
+import com.example.demo.service.UserService;
+
+@CrossOrigin("*")
+@RestController
+public class UserController {
+
+    @Autowired
+    public UserService userService;
+
+    @PostMapping("/register")
+    public UserModel saveUser(@RequestBody UserDto userDto) {
+        return userService.createUser(userDto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserModel user) {
+
+        UserModel dbUser = userRepository.findByEmail(user.getEmail());
+
+        if (dbUser == null) {
+            return ResponseEntity.badRequest().body("❌ User not found");
+        }
+
+        // ⭐ NULL SAFE CHECK — Avoid NPE
+        if (dbUser.getPassword() == null || user.getPassword() == null) {
+            return ResponseEntity.badRequest().body("❌ Password missing or invalid");
+        }
+
+        if (!dbUser.getPassword().equals(user.getPassword())) {
+            return ResponseEntity.badRequest().body("❌ Incorrect password");
+        }
+
+        return ResponseEntity.ok(dbUser);
+    }
+
+
+    @GetMapping("/users")
+    public List<UserModel> getUsers() {
+        return userService.getAllUser();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public String deleteUser(@PathVariable Long id) {
+        boolean deleted = userService.deleteUser(id);
+        return deleted ? "User deleted successfully" : "User not found";
+    }
+    
+    @PutMapping("/update/{id}")
+    public UserModel update(@PathVariable Long id, @RequestBody UserDto dto) {
+        return userService.updateUser(id, dto);
+    }
+
+}

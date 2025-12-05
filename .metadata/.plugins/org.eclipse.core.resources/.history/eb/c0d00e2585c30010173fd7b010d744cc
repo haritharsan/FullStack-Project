@@ -1,0 +1,203 @@
+package com.example.service;
+
+import java.io.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.regex.*;
+
+import org.springframework.stereotype.Service;
+
+import com.example.dto.TestDto;
+
+@Service
+public class TestService {
+
+	private static final int MAX_COMPLEXITY = 50;
+
+	public List<TestDto> analyzeFiles(List<File> javaFiles) throws IOException {
+		List<TestDto> results = new ArrayList<>();
+
+		for (File file : javaFiles) {
+			TestDto result = new TestDto();
+			result.setFileName(file.getName());
+			
+
+			List<String> lines = Files.readAllLines(file.toPath());
+
+			int codeLines = 0, commentLines = 0, blankLines = 0;
+			int loopCount = 0, conditionalCount = 0, variableCount = 0;
+			int complexity = 1;
+
+			int maxLoopDepth = 0, maxConditionalDepth = 0;
+
+			Map<String, Integer> variableTypeCount = new HashMap<>();
+			Set<String> uniqueVariables = new HashSet<>();
+
+			Pattern loopPattern = Pattern.compile("\\b(for|while|do)\\b");
+			Pattern conditionalPattern = Pattern.compile("\\b(if|else if|switch|case)\\b");
+			Pattern variablePattern = Pattern.compile("\\b(int|double|float|char|String|boolean|long|var)\\b");
+
+			Deque<String> loopStack = new ArrayDeque<>();
+			Deque<String> condStack = new ArrayDeque<>();
+
+			for (String line : lines) {
+				String trimmed = line.trim();
+				if (trimmed.isEmpty()) {
+					blankLines++;
+					continue;
+				}
+				if (trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*")) {
+					commentLines++;
+					continue;
+				}
+  
+				codeLines++;
+
+				Matcher loopMatcher = loopPattern.matcher(trimmed);
+				while (loopMatcher.find()) {
+					loopCount++;
+					loopStack.push("{");
+					if (loopStack.size() > maxLoopDepth)
+						maxLoopDepth = loopStack.size();
+				}
+
+				Matcher conditionalMatcher = conditionalPattern.matcher(trimmed);
+				while (conditionalMatcher.find()) {
+					conditionalCount++;
+					condStack.push("{");
+					if (condStack.size() > maxConditionalDepth)
+						maxConditionalDepth = condStack.size();
+				}
+
+				for (char c : trimmed.toCharArray()) {
+					if (c == '}') {
+						if (!loopStack.isEmpty())
+							loopStack.pop();
+						if (!condStack.isEmpty())
+							condStack.pop();
+					}
+				}
+
+				Matcher variableMatcher = variablePattern.matcher(trimmed);
+				while (variableMatcher.find()) {
+					variableCount++;
+					String type = variableMatcher.group(1);
+					variableTypeCount.put(type, variableTypeCount.getOrDefault(type, 0) + 1);
+
+					Pattern varNamePattern = Pattern.compile(type + "\\s+(\\w+)");
+					Matcher nameMatcher = varNamePattern.matcher(trimmed);
+					while (nameMatcher.find()) {
+						uniqueVariables.add(nameMatcher.group(1));
+					}
+				}
+			}
+
+			complexity += loopCount + conditionalCount + variableCount / 2 + maxLoopDepth + maxConditionalDepth;
+
+			boolean namingConsistent = true;
+			for (String line : lines) {
+				String trimmed = line.trim();
+				if (trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*"))
+					continue;
+				if (trimmed.contains("=")) {
+					String[] parts = trimmed.split(" ");
+					for (String word : parts) {
+						if (word.isEmpty())
+							continue;
+						if (word.matches("\\d+"))
+							continue;
+						if (word.matches("int|double|float|char|String|boolean|long|var"))
+							continue;
+						if (!word.matches("[A-Za-z0-9]+"))
+							continue;
+						if (!Character.isLowerCase(word.charAt(0))) {
+							namingConsistent = false;
+							break;
+						}
+					}
+				}
+			}
+
+			int score = Math.min(100, (complexity * 100) / MAX_COMPLEXITY);
+			String difficultyLevel;
+			if (score <= 30)
+				difficultyLevel = "Easy";
+			else if (score <= 70)
+				difficultyLevel = "Medium";
+			else if (score <= 90)
+				difficultyLevel = "Hard";
+			else
+				difficultyLevel = "Very Hard";
+
+			result.setCodeLines(codeLines);
+			result.setCommentLines(commentLines);
+			result.setBlankLines(blankLines);
+			result.setLoopCount(loopCount);
+			result.setConditionalCount(conditionalCount);
+			result.setVariableCount(variableCount);
+			result.setUniqueVariableCount(uniqueVariables.size());
+			result.setVariableTypeCount(variableTypeCount);
+			result.setComplexityLevel(complexity);
+			result.setMaxLoopDepth(maxLoopDepth);
+			result.setMaxConditionalDepth(maxConditionalDepth);
+			result.setNamingConventionConsistent(namingConsistent);
+			result.setDifficultyScore(score);
+			result.setDifficultyLevel(difficultyLevel);
+			result.setProgramFlow(generateProgramFlow(lines));
+			results.add(result);
+		}
+
+		return results;
+	}
+
+	private List<String> generateProgramFlow(List<String> lines) {
+		List<String> flow = new ArrayList<>();
+		Pattern methodPattern = Pattern.compile("\\b(public|private|protected|static)\\s+.*\\s+(\\w+)\\s*\\(");
+		Pattern loopPattern = Pattern.compile("\\b(for|while|do)\\b");
+		Pattern conditionalPattern = Pattern.compile("\\b(if|else if|else|switch|case)\\b");
+		Pattern methodCallPattern = Pattern.compile("\\b(\\w+)\\s*\\(");
+
+		Set<String> keywordsToSkip = Set.of("if", "for", "while", "switch", "return", "else", "do", "catch", "try",
+				"finally", "System", "Math");
+
+		for (String line : lines) {
+			String trimmed = line.trim();
+			if (trimmed.isEmpty() || trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*"))
+				continue;
+
+			Matcher mMethod = methodPattern.matcher(trimmed);
+			if (mMethod.find())
+				flow.add("Method: " + mMethod.group(2));
+
+			Matcher mLoop = loopPattern.matcher(trimmed);
+			if (mLoop.find())
+				flow.add("Loop: " + trimmed);
+
+			Matcher mCond = conditionalPattern.matcher(trimmed);
+			if (mCond.find())
+				flow.add("Conditional: " + trimmed);
+
+			Matcher mCall = methodCallPattern.matcher(trimmed);
+			while (mCall.find()) {
+				String callName = mCall.group(1);
+				if (!keywordsToSkip.contains(callName)) {
+					flow.add("Call: " + callName + "()");
+				}
+			}
+		}
+
+		return flow;
+	}
+
+	public List<File> getJavaFilesFromFiles(File[] files) {
+	    List<File> javaFiles = new ArrayList<>();
+
+	    for (File f : files) {
+	        if (f.getName().endsWith(".java")) {
+	            javaFiles.add(f);
+	        }
+	    }
+	    return javaFiles;
+	}
+
+	}

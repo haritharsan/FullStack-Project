@@ -1,0 +1,29 @@
+package com.example.demo.config;
+
+import org.apache.catalina.Context;
+import org.apache.tomcat.util.http.fileupload.FileUpload;
+import org.apache.tomcat.util.http.fileupload.impl.FileCleanerCleanup;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class TomcatUploadConfig {
+
+    @Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> tomcatCustomizer() {
+        return factory -> factory.addContextCustomizers((Context context) -> {
+            // Allow multipart parsing
+            context.setAllowCasualMultipartParsing(true);
+
+            // ⭐ FIX FILE COUNT LIMIT
+            FileUpload fileUpload = new FileUpload();
+            fileUpload.setFileCountMax(50); // ALLOW 50 fields
+
+            context.getServletContext().setAttribute(
+                    FileCleanerCleanup.FILEUPLOAD_TRACKER, fileUpload
+            );
+        });
+    }
+}

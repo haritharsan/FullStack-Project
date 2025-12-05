@@ -1,0 +1,33 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.demo.dto.CertificateType;
+import com.example.demo.service.CertificateTypeService;
+
+@CrossOrigin("*")
+@RestController
+@RequestMapping("/api/certificate-types")
+public class CertificateTypeController {
+
+    @Autowired
+    private CertificateTypeService service;
+
+    @PostMapping("/add")
+    public CertificateType add(@RequestBody CertificateType cert) {
+        return service.addCertificate(cert);
+    }
+
+    @GetMapping
+    public List<CertificateType> getAll() {
+        return service.getAll();
+    }
+
+    @DeleteMapping("/{id}")
+    public String delete(@PathVariable Long id) {
+        return service.deleteCertificate(id);
+    }
+}

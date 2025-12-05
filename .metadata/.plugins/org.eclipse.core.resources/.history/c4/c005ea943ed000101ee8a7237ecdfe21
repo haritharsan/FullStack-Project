@@ -1,0 +1,111 @@
+package com.example.demo.service;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.demo.model.ApplicationModel;
+import com.example.demo.repositoryint.ApplicationRepository;
+
+@Service
+public class ApplicationService {
+
+    @Autowired
+    private ApplicationRepository repo;
+
+    @Autowired
+    private OcrService ocrService;   // ⭐ ADD THIS
+
+    public ApplicationModel apply(ApplicationModel app) {
+        app.setStatus("Pending");
+        return repo.save(app);
+    }
+
+    public List<ApplicationModel> getByEmail(String email) {
+        return repo.findByEmail(email);
+    }
+
+    public List<ApplicationModel> getAllApplications() {
+        return repo.findAll();
+    }
+
+    public ApplicationModel updateStatus(Long id, String status) {
+        ApplicationModel app = repo.findById(id).orElse(null);
+
+        if (app == null) return null;
+
+        app.setStatus(status);
+
+        if(status.equals("Approved")) {
+            app.setCertificateUrl("CERT-" + app.getId() + ".pdf");
+        }
+
+        return repo.save(app);
+    }
+
+    public ApplicationModel getById(Long id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    public boolean delete(Long id) {
+        if (!repo.existsById(id)) {
+            return false;
+        }
+        repo.deleteById(id);
+        return true;
+    }
+
+    // ====================================================================
+    //  ⭐ NEW METHOD — Aadhaar Upload + OCR Verification + Save to DB
+    // ====================================================================
+    public ResponseEntity<?> saveAadhaar(MultipartFile file, Long appId) {
+        try {
+            // 1️⃣ Extract Aadhaar text using OCR
+            String extracted = ocrService.extractText(file).toLowerCase();
+
+            // 2️⃣ Validate: Find 12-digit Aadhaar number
+            Pattern pattern = Pattern.compile("\\b[2-9]{1}[0-9]{11}\\b");
+            Matcher matcher = pattern.matcher(extracted);
+
+            if (!matcher.find()) {
+                return ResponseEntity.badRequest().body("❌ Invalid Aadhaar: No valid Aadhaar number detected.");
+            }
+
+            // 3️⃣ Validate: Aadhaar keywords
+            if (!(extracted.contains("aadhaar") ||
+                  extracted.contains("government") ||
+                  extracted.contains("uidai"))) {
+
+                return ResponseEntity.badRequest().body("❌ Invalid Aadhaar Document.");
+            }
+
+            // 4️⃣ Save file to local folder
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path path = Paths.get("uploads/aadhaar/" + fileName);
+            Files.copy(file.getInputStream(), path);
+
+            // 5️⃣ Update in DB
+            ApplicationModel app = repo.findById(appId).orElse(null);
+            if (app == null) {
+                return ResponseEntity.badRequest().body("❌ Application not found.");
+            }
+
+            app.setAadhaarFile(fileName);
+            app.setAadhaarVerified(true);
+            repo.save(app);
+
+            return ResponseEntity.ok("✅ Aadhaar Verified & Saved");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Server Error: " + e.getMessage());
+        }
+    }
+}

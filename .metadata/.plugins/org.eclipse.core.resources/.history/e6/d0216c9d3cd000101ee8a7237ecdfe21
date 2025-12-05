@@ -1,0 +1,55 @@
+package com.example.demo.service;
+
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.example.demo.model.ApplicationModel;
+import com.example.demo.repositoryint.ApplicationRepository;
+
+@Service
+public class ApplicationService {
+
+    @Autowired
+    private ApplicationRepository repo;
+
+    public ApplicationModel apply(ApplicationModel app) {
+        app.setStatus("Pending");
+        return repo.save(app);
+    }
+
+    // TRACK BY EMAIL
+    public List<ApplicationModel> getByEmail(String email) {
+        return repo.findByEmail(email);
+    }
+
+    public List<ApplicationModel> getAllApplications() {
+        return repo.findAll();
+    }
+
+    public ApplicationModel updateStatus(Long id, String status) {
+        ApplicationModel app = repo.findById(id).orElse(null);
+
+        if (app == null) return null;
+
+        app.setStatus(status);
+
+        if(status.equals("Approved")) {
+            app.setCertificateUrl("CERT-" + app.getId() + ".pdf");
+        }
+
+        return repo.save(app);
+    }
+
+    public ApplicationModel getById(Long id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    // ✅ NEW — DELETE APPLICATION
+    public boolean delete(Long id) {
+        if (!repo.existsById(id)) {
+            return false;
+        }
+        repo.deleteById(id);
+        return true;
+    }
+}
