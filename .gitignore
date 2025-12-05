@@ -21,3 +21,33 @@ uploads/
 # OS system files
 .DS_Store
 Thumbs.db
+###########################
+# IGNORE ALL BY DEFAULT
+###########################
+*/
+
+###########################
+# BUT ALLOW ONLY THESE
+###########################
+!Frontend/
+!GovernmentProject/
+!.gitignore
+!README
+!docker-compose.yml
+
+###########################
+# INSIDE FRONTEND IGNORE (OPTIONAL)
+###########################
+Frontend/node_modules/
+Frontend/dist/
+Frontend/build/
+
+###########################
+# IGNORE UNWANTED FOLDERS
+###########################
+.metadata/
+uploads/
+CompanyTask/
+Project/
+QATask/
+Government_Project/
